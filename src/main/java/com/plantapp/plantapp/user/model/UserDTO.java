@@ -11,5 +11,6 @@ public class UserDTO {
     private String email;
     private String nickName;
     private String photoUrl;
+    private byte[] profileImage;
     private UserType userType;
 }

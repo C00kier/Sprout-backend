@@ -10,4 +10,5 @@ public class UpdateRequestDTO {
     private String newEmail;
     private String newNickName;
     private String newPhotoUrl;
+    private char[] profileImage;
 }

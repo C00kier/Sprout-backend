@@ -1,10 +1,12 @@
 package com.plantapp.plantapp.user.model;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.plantapp.plantapp.user_type.UserType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.hibernate.annotations.Type;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,7 +16,7 @@ import java.util.List;
 
 @Entity
 @Data
-@Table(name="users")
+@Table(name = "users")
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
@@ -39,15 +41,19 @@ public class User implements UserDetails {
     @Column(nullable = true)
     private String photoUrl;
 
+    @Lob
+    @Column(name="profile_image")
+    private byte[] profileImage;
 
-    public User(String email, String password, String nickName){
+
+    public User(String email, String password, String nickName) {
         this.email = email;
         this.password = password;
         this.nickName = nickName;
         this.userType = UserType.USER;
     }
 
-    public User(int userId){
+    public User(int userId) {
         this.userId = userId;
     }
 
@@ -60,6 +66,7 @@ public class User implements UserDetails {
     public String getUsername() {
         return email;
     }
+
     @Override
     public boolean isAccountNonExpired() {
         return true;

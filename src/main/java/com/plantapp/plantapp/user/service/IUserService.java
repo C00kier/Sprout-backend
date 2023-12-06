@@ -2,7 +2,10 @@ package com.plantapp.plantapp.user.service;
 
 import com.plantapp.plantapp.user.model.User;
 import com.plantapp.plantapp.user.model.UserDTO;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Optional;
 
 public interface IUserService {
@@ -15,5 +18,10 @@ public interface IUserService {
     void deleteUserById(int userId);
 
     void updateUser(int userId, String oldPassword, String newPassword, String newEmail, String newLogin, String newPhotoUrl);
+
+    @Transactional
+    byte[] getUserProfilePicture(int userId);
+    @Transactional
+    void updateUserProfilePicture(MultipartFile file, int userId) throws IOException;
 
 }

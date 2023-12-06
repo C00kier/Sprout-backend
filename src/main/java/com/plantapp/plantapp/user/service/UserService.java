@@ -7,19 +7,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @Service
-public class UserService implements IUserService{
+public class UserService implements IUserService {
     private final UserRepository userRepository;
 
     private final PasswordEncoder passwordEncoder;
 
 
-
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder){
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
 
@@ -32,8 +33,8 @@ public class UserService implements IUserService{
     }
 
     @Override
-    public Optional<User> getUserById(int userId){
-         return userRepository.findById(userId);
+    public Optional<User> getUserById(int userId) {
+        return userRepository.findById(userId);
     }
 
     @Override
@@ -44,14 +45,15 @@ public class UserService implements IUserService{
                 user.getEmail(),
                 user.getNickName(),
                 user.getPhotoUrl(),
+                user.getProfileImage(),
                 user.getUserType())).orElse(null);
 
     }
 
     @Override
     @Transactional
-      public void deleteUserById(int userId){
-        if(getUserById(userId).isPresent()) {
+    public void deleteUserById(int userId) {
+        if (getUserById(userId).isPresent()) {
             userRepository.deleteById(userId);
         }
     }
@@ -62,10 +64,9 @@ public class UserService implements IUserService{
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             if (oldPassword != null && newPassword != null) {
-                if (passwordEncoder.matches(oldPassword, user.getPassword())){
+                if (passwordEncoder.matches(oldPassword, user.getPassword())) {
                     user.setPassword(passwordEncoder.encode(newPassword));
-                }
-                else {
+                } else {
                     throw new IllegalStateException("Passwords not matching");
                 }
             }
@@ -79,6 +80,34 @@ public class UserService implements IUserService{
                 user.setPhotoUrl(newPhotoUrl);
             }
             userRepository.save(user);
+        }
+    }
+
+
+    @Override
+    public byte[] getUserProfilePicture(int userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            if (user.getProfileImage() != null) {
+                return user.getProfileImage();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void updateUserProfilePicture(MultipartFile file, int userId) throws IOException {
+
+        byte[] data = file.getBytes();
+
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            if (file != null) {
+                user.setProfileImage(data);
+                userRepository.save(user);
+            }
         }
     }
 

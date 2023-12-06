@@ -6,8 +6,14 @@ import com.plantapp.plantapp.user.model.UserDTO;
 import com.plantapp.plantapp.user.service.UserService;
 import com.plantapp.plantapp.user_game_progress.service.UserGameProgressService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 
 @RestController
@@ -19,22 +25,22 @@ public class UserController {
 
 
     @Autowired
-    public UserController(UserService userService, UserGameProgressService userGameProgressService){
+    public UserController(UserService userService, UserGameProgressService userGameProgressService) {
         this.userService = userService;
         this.userGameProgressService = userGameProgressService;
     }
 
     @PostMapping()
-    public ResponseEntity<UserDTO> getUserById(@RequestBody User user){
+    public ResponseEntity<UserDTO> getUserById(@RequestBody User user) {
         UserDTO userDTO = userService.getUserObjectById(user.getUserId());
         return ResponseEntity.ok(userDTO);
     }
 
     @PutMapping("/update")
     public ResponseEntity<String> updateUser(
-             @RequestBody UpdateRequestDTO updateRequest) {
+            @RequestBody UpdateRequestDTO updateRequest) {
         int userId = updateRequest.getUserId();
-        String oldPassword =updateRequest.getOldPassword();
+        String oldPassword = updateRequest.getOldPassword();
         String newPassword = updateRequest.getNewPassword();
         String newEmail = updateRequest.getNewEmail();
         String newNickName = updateRequest.getNewNickName();
@@ -50,8 +56,28 @@ public class UserController {
 
 
     @DeleteMapping("/delete")
-    public void deleteUser(@RequestBody int userId){
+    public void deleteUser(@RequestBody int userId) {
         userGameProgressService.removeUserExperienceByUserId(userId);
         userService.deleteUserById(userId);
+    }
+
+    @PutMapping("/update/picture")
+    public ResponseEntity<String> updateProfilePicture(@RequestParam("file") MultipartFile file, @RequestParam int userId) throws IOException {
+        userService.updateUserProfilePicture(file, userId);
+
+        return ResponseEntity.ok("Image uploaded successfully");
+    }
+
+    @GetMapping("/picture/{userId}")
+    public ResponseEntity<byte[]> getImageById(@PathVariable int userId){
+        try{
+            byte[] imageData = userService.getUserProfilePicture(userId);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_JPEG);
+
+            return new ResponseEntity<>(imageData,headers, HttpStatus.OK);
+        }catch(Exception e){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 }
